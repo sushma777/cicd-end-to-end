@@ -1,10 +1,19 @@
-FROM python:3
-RUN pip install django==3.2
+FROM python:3.9
 
-COPY . .
+# Set the working directory
+WORKDIR /app
 
-RUN python manage.py migrate
-EXPOSE 8000
-CMD ["python","manage.py","runserver","0.0.0.0:8000"]
+# Copy requirements.txt into the container
+COPY requirements.txt /app/
+
+# Install pipenv and create a virtual environment
+RUN pip install pipenv
+RUN pipenv install --deploy --ignore-pipfile
+
+# Activate the virtual environment and copy the application files
+COPY . /app/
+
+# Run migrations inside the virtual environment
+CMD ["pipenv", "run", "python", "manage.py", "migrate"]
 
 
