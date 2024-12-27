@@ -1,19 +1,23 @@
-FROM python:3.9
+# Use a more feature-rich Python image
+FROM python:3.9-slim
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy requirements.txt into the container
+# Copy the requirements.txt first to leverage Docker caching
 COPY requirements.txt /app/
 
-# Install pipenv and create a virtual environment
-RUN pip install pipenv
-RUN pipenv install --deploy --ignore-pipfile
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Activate the virtual environment and copy the application files
+# Copy the rest of the application files into the container
 COPY . /app/
 
-# Run migrations inside the virtual environment
-CMD ["pipenv", "run", "python", "manage.py", "migrate"]
+# Run migrations
+RUN python manage.py migrate
 
+# Expose the port the app will run on
+EXPOSE 8000
 
+# Start the Django development server on all interfaces
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
